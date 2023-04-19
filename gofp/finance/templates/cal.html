@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Wealth Calculator</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 20px;
+      background-color: #ddd;
+      outline: none;
+      opacity: 0.7;
+      -webkit-transition: .2s;
+      transition: opacity .2s;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background-color: #3498db;
+      cursor: pointer;
+    }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      background-color: #3498db;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Wealth Calculator</h1>
+  <label>How much will you be saving each month?</label>
+  <input type="number" id="monthly-savings" value="0">
+  <br>
+  <label>Do you have a lump sum? If so enter it here:</label>
+  <input type="number" id="lump-sum" value="0">
+  <br>
+  <label>Time (years)</label>
+  <input type="number" id="years" value="10">
+  <br>
+  <label>Annual Interest Rate:</label>
+  <input type="range" id="interest-rate" min="0" max="1" step="0.01" value="0.05"><br>
+  <span id="interest-rate-value"></span>
+  <br>
+  <button onclick="calculate()">Calculate</button>
+  <br>
+  <canvas id="wealth-chart"></canvas>
+  <br>
+  <div id="worth"></div>
+
+  <script>
+    function calculate() {
+      const monthlySavings = parseFloat(document.getElementById("monthly-savings").value);
+      const lumpSum = parseFloat(document.getElementById("lump-sum").value);
+      const years = parseFloat(document.getElementById("years").value);
+      const annualInterestRate = parseFloat(document.getElementById("interest-rate").value);
+
+      let initialInvestment = lumpSum;
+      let wealth = initialInvestment;
+      const data = [];
+      const dataInvestment = [];
+      let totalInvestment = initialInvestment;
+      for (let i = 0; i <= years; i++) {
+        wealth += monthlySavings * 12;
+        totalInvestment += monthlySavings * 12;
+        data.push(wealth);
+        dataInvestment.push(totalInvestment);
+        wealth *= (1 + annualInterestRate);
+      }
+
+      const ctx = document.getElementById('wealth-chart').getContext('2d');
+      const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: Array.from(Array(years + 1), (_, i) => i.toString()),
+          datasets: [{
+            label: 'Investment Worth',
+            data: data,
+            borderColor: 'blue',
+            fill: false
+          },
+          {
+            label: 'Amount Invested',
+            data: dataInvestment,
+            borderColor: 'red',
+            fill: false
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+
+      const worthElement = document.getElementById('worth');
+worthElement.innerHTML = '₹' + data[years].toLocaleString(undefined, {
+maximumFractionDigits: 2,
+}) + '<br>' + '₹' + totalInvestment.toLocaleString(undefined, {
+maximumFractionDigits: 2,
+}) + ' invested across ' + years + ' years' + '<br>' + 'Assuming returns at ' + (annualInterestRate * 100).toFixed(2) + '% p.a.';
+}
+</script>
+
+</body>
+</html>
